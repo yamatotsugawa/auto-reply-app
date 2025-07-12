@@ -126,6 +126,7 @@ export default function AutoReplyForm() {
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
           >
+            <option value="">（肩書きなし）</option>
             <option value="津川ヒカリ治療院">津川ヒカリ治療院</option>
             <option value="株式会社やまと">株式会社やまと</option>
             <option value="ホラー映画団長">ホラー映画団長</option>
