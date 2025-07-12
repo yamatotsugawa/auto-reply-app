@@ -1,103 +1,164 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState } from "react";
+import generateReply from "@/utils/generateReply";
+
+export default function AutoReplyForm() {
+  const [mode, setMode] = useState("reply");
+  const [media, setMedia] = useState("メール");
+  const [attribute, setAttribute] = useState("取引先");
+  const [tone, setTone] = useState("ノーマル");
+  const [replyType, setReplyType] = useState("返信");
+  const [incomingMessage, setIncomingMessage] = useState("");
+  const [keywords, setKeywords] = useState("");
+  const [companyName, setCompanyName] = useState("津川ヒカリ治療院");
+  const [reply, setReply] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    try {
+      const result = await generateReply({
+        mode,
+        recipientRole: attribute,
+        tone,
+        purpose: replyType,
+        content: keywords,
+        situation: "",
+        background1: "",
+        background2: "",
+        medium: media,
+        incomingMessage,
+        companyName,
+      });
+      setReply(result);
+    } catch (error) {
+      console.error("生成エラー:", error);
+      setReply("返信文の生成に失敗しました。もう一度お試しください。");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+      <div className="bg-white rounded-xl shadow-md p-8 w-full max-w-2xl">
+        <h1 className="text-2xl font-bold mb-6 text-orange-600 text-center">
+          自動返信文作成アプリ
+        </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+        {/* 相手からのメッセージ */}
+        <label className="block font-semibold mb-1">相手からのメッセージ：</label>
+        <textarea
+          value={incomingMessage}
+          onChange={(e) => setIncomingMessage(e.target.value)}
+          placeholder="相手から来たメールやメッセージをここに貼り付けてください"
+          className="w-full border p-2 rounded mb-6"
+          rows={4}
+        />
+
+        {/* モード */}
+        <div className="mb-4">
+          <label className="font-semibold block mb-1">モード：</label>
+          <label className="mr-4">
+            <input
+              type="radio"
+              checked={mode === "new"}
+              onChange={() => setMode("new")}
+              className="mr-1"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            新規作成
+          </label>
+          <label>
+            <input
+              type="radio"
+              checked={mode === "reply"}
+              onChange={() => setMode("reply")}
+              className="mr-1"
+            />
+            返信作成
+          </label>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        {/* プルダウン4つ横並び */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div>
+            <label className="block font-semibold mb-1">やり取りの媒体：</label>
+            <select value={media} onChange={(e) => setMedia(e.target.value)} className="w-full border p-2 rounded">
+              <option>メール</option>
+              <option>LINE</option>
+              <option>チャットワーク/スラック</option>
+            </select>
+          </div>
+          <div>
+            <label className="block font-semibold mb-1">相手の属性：</label>
+            <select value={attribute} onChange={(e) => setAttribute(e.target.value)} className="w-full border p-2 rounded">
+              <option>取引先</option>
+              <option>社内</option>
+              <option>顧客</option>
+            </select>
+          </div>
+          <div>
+            <label className="block font-semibold mb-1">文章の硬さ：</label>
+            <select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full border p-2 rounded">
+              <option>超硬く</option>
+              <option>しっかり硬く</option>
+              <option>ノーマル</option>
+              <option>フランク</option>
+              <option>ラフ</option>
+            </select>
+          </div>
+          <div>
+            <label className="block font-semibold mb-1">返信種別：</label>
+            <select value={replyType} onChange={(e) => setReplyType(e.target.value)} className="w-full border p-2 rounded">
+              <option>返信</option>
+              <option>感謝</option>
+              <option>謝罪</option>
+            </select>
+          </div>
+        </div>
+
+        {/* 肩書き */}
+        <div className="mb-6">
+          <label className="block font-semibold mb-1">肩書き（会社名）：</label>
+          <select
+            className="w-full border p-2 rounded"
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+          >
+            <option value="津川ヒカリ治療院">津川ヒカリ治療院</option>
+            <option value="株式会社やまと">株式会社やまと</option>
+            <option value="ホラー映画団長">ホラー映画団長</option>
+          </select>
+        </div>
+
+        {/* キーワード入力 */}
+        <div className="mb-6">
+          <label className="block font-semibold mb-1">返信したい内容：</label>
+          <textarea
+            value={keywords}
+            onChange={(e) => setKeywords(e.target.value)}
+            placeholder="伝えたい内容やキーワードを入力…"
+            className="w-full border p-2 rounded"
+            rows={3}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        </div>
+
+        {/* 生成ボタン */}
+        <button
+          onClick={handleGenerate}
+          className="w-full bg-orange-500 text-white py-3 rounded hover:bg-orange-600 transition"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          {loading ? "生成中..." : "✨ 文章を生成する"}
+        </button>
+
+        {/* 結果表示 */}
+        {reply && (
+          <div className="mt-6 p-4 bg-gray-100 rounded border whitespace-pre-wrap">
+            {reply}
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
